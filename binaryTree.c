@@ -1,3 +1,16 @@
+/**
+ * @file binaryTree.c
+ * @author Francisco Dias
+ * @brief Versão paralela de arvore binária compartilhada, baseada na versão
+ * sequencial do código do Prof. Nívio Ziviani
+ * https://www2.dcc.ufmg.br/livros/algoritmos/cap5/codigo/c/5.4a5.10-arvorebinaria.c
+ * @version 0.1
+ * @date 2020-09-12
+ *
+ * @copyright Copyright (c) 2020
+ *
+ */
+
 #include <limits.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -19,6 +32,8 @@ typedef struct TipoNo {
   TipoRegistro Reg;
   TipoApontador Esq, Dir;
   pthread_mutex_t mutex;
+  int numLeitores;
+  pthread_mutex_t mContatorLeitores;
 } TipoNo;
 
 typedef TipoApontador TipoDicionario;
@@ -29,12 +44,32 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p) {
     return;
   }
   if (x->Chave < (*p)->Reg.Chave) {
+    pthread_mutex_lock(&(*p)->mContatorLeitores);
+    if (++(*p)->numLeitores == 1)
+      pthread_mutex_lock(&(*p)->mutex);
+    pthread_mutex_unlock(&(*p)->mContatorLeitores);
+
     Pesquisa(x, &(*p)->Esq);
+
+    pthread_mutex_lock(&(*p)->mContatorLeitores);
+    if (--(*p)->numLeitores == 0)
+      pthread_mutex_unlock(&(*p)->mutex);
+    pthread_mutex_unlock(&(*p)->mContatorLeitores);
     return;
   }
-  if (x->Chave > (*p)->Reg.Chave)
+  if (x->Chave > (*p)->Reg.Chave) {
+    pthread_mutex_lock(&(*p)->mContatorLeitores);
+    if (++(*p)->numLeitores == 1)
+      pthread_mutex_lock(&(*p)->mutex);
+    pthread_mutex_unlock(&(*p)->mContatorLeitores);
+
     Pesquisa(x, &(*p)->Dir);
-  else
+
+    pthread_mutex_lock(&(*p)->mContatorLeitores);
+    if (--(*p)->numLeitores == 0)
+      pthread_mutex_unlock(&(*p)->mutex);
+    pthread_mutex_unlock(&(*p)->mContatorLeitores);
+  } else
     *x = (*p)->Reg;
 }
 
@@ -45,6 +80,8 @@ void Insere(TipoRegistro x, TipoApontador *p) {
     (*p)->Esq = NULL;
     (*p)->Dir = NULL;
     pthread_mutex_init(&(*p)->mutex, NULL);
+    (*p)->numLeitores = 0;
+    pthread_mutex_init(&(*p)->mContatorLeitores, NULL);
     return;
   }
   if (x.Chave < (*p)->Reg.Chave) {
@@ -81,11 +118,15 @@ void Retira(TipoRegistro x, TipoApontador *p) {
     return;
   }
   if (x.Chave < (*p)->Reg.Chave) {
+    pthread_mutex_lock(&(*p)->mutex);
     Retira(x, &(*p)->Esq);
+    pthread_mutex_unlock(&(*p)->mutex);
     return;
   }
   if (x.Chave > (*p)->Reg.Chave) {
+    pthread_mutex_lock(&(*p)->mutex);
     Retira(x, &(*p)->Dir);
+    pthread_mutex_unlock(&(*p)->mutex);
     return;
   }
   if ((*p)->Dir == NULL) {
