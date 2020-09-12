@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -17,6 +18,7 @@ typedef struct TipoNo *TipoApontador;
 typedef struct TipoNo {
   TipoRegistro Reg;
   TipoApontador Esq, Dir;
+  pthread_mutex_t mutex;
 } TipoNo;
 
 typedef TipoApontador TipoDicionario;
@@ -42,15 +44,20 @@ void Insere(TipoRegistro x, TipoApontador *p) {
     (*p)->Reg = x;
     (*p)->Esq = NULL;
     (*p)->Dir = NULL;
+    pthread_mutex_init(&(*p)->mutex, NULL);
     return;
   }
   if (x.Chave < (*p)->Reg.Chave) {
+    pthread_mutex_lock(&(*p)->mutex);
     Insere(x, &(*p)->Esq);
+    pthread_mutex_unlock(&(*p)->mutex);
     return;
   }
-  if (x.Chave > (*p)->Reg.Chave)
+  if (x.Chave > (*p)->Reg.Chave) {
+    pthread_mutex_lock(&(*p)->mutex);
     Insere(x, &(*p)->Dir);
-  else
+    pthread_mutex_unlock(&(*p)->mutex);
+  } else
     printf("Erro : Registro ja existe na arvore\n");
 }
 
