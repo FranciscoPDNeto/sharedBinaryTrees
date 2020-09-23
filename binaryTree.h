@@ -77,21 +77,27 @@ typedef struct {
  */
 void initRoot(NodePointerType *root);
 /**
- * @brief Pesquisa o registro passado dentro da arvore, ou ramo, passado.
+ * @brief Pesquisa o registro passado dentro da arvore, ou ramo, passado. (Thread-safe)
+ * Várias threads podem pesquisar ao mesmo tempo, mas com exclusão mútua com o 
+ * insert e remove no nó.
  * 
  * @param value Registro a ser procurado na arvore.
  * @param root Arvore ou ramo a se procurar o registro.
  */
 void search(RegistryType *value, NodePointerType *root);
 /**
- * @brief Insere o registro passado dentro da arvore passada.
+ * @brief Insere o registro passado dentro da arvore passada. (Thread-safe)
+ * Só uma thread pode inserir por vez, e com exclusão mútua com o search e 
+ * removeValue no nó.
  * 
  * @param value Registro a ser inserido à arvore.
  * @param root Arvore ou ramo a se inserir o registro.
  */
 void insert(RegistryType value, NodePointerType *root);
 /**
- * @brief Remove o registro passado dentro da arvore passada.
+ * @brief Remove o registro passado dentro da arvore passada. (Thread-safe)
+ * Só uma thread pode remover por vez, e com exclusão mútua com o search e insert
+ * no nó.
  * 
  * @param value Registro a ser removido da arvore.
  * @param root Arvore ou ramo a se remover o registro.
