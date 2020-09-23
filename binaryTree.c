@@ -8,15 +8,16 @@
  *
  */
 
+#include "binaryTree.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "binaryTree.h"
 
 void search(RegistryType *value, NodePointerType *root) {
   if (*root == NULL) {
     printf("Erro: Registro nao esta presente na arvore\n");
     return;
   }
+
   if (value->key < (*root)->registry.key) {
     pthread_mutex_lock(&(*root)->mutexReadersCounter);
     if (++(*root)->numReaders == 1)
@@ -29,9 +30,9 @@ void search(RegistryType *value, NodePointerType *root) {
     if (--(*root)->numReaders == 0)
       pthread_mutex_unlock(&(*root)->mutex);
     pthread_mutex_unlock(&(*root)->mutexReadersCounter);
-    return;
-  }
-  if (value->key > (*root)->registry.key) {
+
+  } else if (value->key > (*root)->registry.key) {
+
     pthread_mutex_lock(&(*root)->mutexReadersCounter);
     if (++(*root)->numReaders == 1)
       pthread_mutex_lock(&(*root)->mutex);
@@ -43,6 +44,7 @@ void search(RegistryType *value, NodePointerType *root) {
     if (--(*root)->numReaders == 0)
       pthread_mutex_unlock(&(*root)->mutex);
     pthread_mutex_unlock(&(*root)->mutexReadersCounter);
+
   } else
     *value = (*root)->registry;
 }
@@ -56,18 +58,19 @@ void insert(RegistryType value, NodePointerType *root) {
     pthread_mutex_init(&(*root)->mutex, NULL);
     (*root)->numReaders = 0;
     pthread_mutex_init(&(*root)->mutexReadersCounter, NULL);
-    return;
-  }
-  if (value.key < (*root)->registry.key) {
+
+  } else if (value.key < (*root)->registry.key) {
+
     pthread_mutex_lock(&(*root)->mutex);
     insert(value, &(*root)->left);
     pthread_mutex_unlock(&(*root)->mutex);
-    return;
-  }
-  if (value.key > (*root)->registry.key) {
+
+  } else if (value.key > (*root)->registry.key) {
+
     pthread_mutex_lock(&(*root)->mutex);
     insert(value, &(*root)->right);
     pthread_mutex_unlock(&(*root)->mutex);
+
   } else
     printf("Erro : Registro ja existe na arvore\n");
 }
@@ -79,6 +82,7 @@ void previousNode(NodePointerType q, NodePointerType *r) {
     previousNode(q, &(*r)->right);
     return;
   }
+
   q->registry = (*r)->registry;
   q = *r;
   *r = (*r)->left;
@@ -91,31 +95,33 @@ void removeValue(RegistryType value, NodePointerType *root) {
     printf("Erro : Registro nao esta na arvore\n");
     return;
   }
+
   if (value.key < (*root)->registry.key) {
     pthread_mutex_lock(&(*root)->mutex);
     removeValue(value, &(*root)->left);
     pthread_mutex_unlock(&(*root)->mutex);
-    return;
-  }
-  if (value.key > (*root)->registry.key) {
+
+  } else if (value.key > (*root)->registry.key) {
+
     pthread_mutex_lock(&(*root)->mutex);
     removeValue(value, &(*root)->right);
     pthread_mutex_unlock(&(*root)->mutex);
-    return;
-  }
-  if ((*root)->right == NULL) {
+
+  } else if ((*root)->right == NULL) {
     Aux = *root;
     *root = (*root)->left;
     free(Aux);
-    return;
-  }
-  if ((*root)->left != NULL) {
+
+  } else if ((*root)->left != NULL) {
+
     previousNode(*root, &(*root)->left);
-    return;
+
+  } else {
+
+    Aux = *root;
+    *root = (*root)->right;
+    free(Aux);
   }
-  Aux = *root;
-  *root = (*root)->right;
-  free(Aux);
 }
 
 void testI(NodeType *root, int pai) {
