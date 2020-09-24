@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -40,14 +41,16 @@ int main(int argc, char *argv[]) {
   permut(vetor, MAX - 1);
 
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
+  InsertRemoveArgs insertArgs[MAX];
   for (i = 0; i < MAX; i++) {
     x.key = vetor[i];
-    InsertRemoveArgs insertArgs;
-    insertArgs.value = x;
-    insertArgs.root = &root;
-    insertPthread(&insertArgs);
-    printf("Inseriu chave: %ld\n", x.key);
+    insertArgs[i].value = x;
+    insertArgs[i].root = &root;
+    pthread_create(&(threads[i]), NULL, insertPthread, &(insertArgs[i]));
   }
+  for (i = 0; i < MAX; i++)
+    pthread_join(threads[i], NULL);
+  
   
   test(root);
 

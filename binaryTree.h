@@ -92,7 +92,7 @@ void search(RegistryType *value, NodePointerType *root);
  * 
  * @param searchArgs Estrutura com todos os argumentos necessários para a procura.
  */
-void searchPthread(void *searchArgs);
+void *searchPthread(void *searchArgs);
 /**
  * @brief Insere o registro passado dentro da arvore passada. (Thread-safe)
  * Só uma thread pode inserir por vez, e com exclusão mútua com o search e 
@@ -109,7 +109,7 @@ void insert(RegistryType value, NodePointerType *root);
  * 
  * @param insertArgs Estrutura com todos os argumentos necessários para a inserção.
  */
-void insertPthread(void *insertArgs);
+void *insertPthread(void *insertArgs);
 /**
  * @brief Remove o registro passado dentro da arvore passada. (Thread-safe)
  * Só uma thread pode remover por vez, e com exclusão mútua com o search e insert
@@ -126,7 +126,7 @@ void removeValue(RegistryType value, NodePointerType *root);
  * 
  * @param removeArgs Estrutura com todos os argumentos necessários para a remoção.
  */
-void removePthread(void *removeArgs);
+void *removePthread(void *removeArgs);
 /**
  * @brief Realiza um teste de corretude na arvore.
  * 

@@ -1,5 +1,6 @@
 CXX = gcc
 CXXFLAGS = -Wall -Werror -Wextra -pedantic
+LDFLAGS = -pthread
 
 SRC = binaryTree.c main.c
 OBJ = $(SRC:.c=.o)
