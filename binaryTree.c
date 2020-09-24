@@ -49,6 +49,11 @@ void search(RegistryType *value, NodePointerType *root) {
     *value = (*root)->registry;
 }
 
+void searchPthread(void *searchArgs) {
+  SearchArgs *threadSearchArgs = (SearchArgs *) searchArgs;
+  search(threadSearchArgs->value, threadSearchArgs->root);
+}
+
 void insert(RegistryType value, NodePointerType *root) {
   if (*root == NULL) {
     *root = (NodePointerType)malloc(sizeof(NodeType));
@@ -73,6 +78,11 @@ void insert(RegistryType value, NodePointerType *root) {
 
   } else
     printf("Erro : Registro ja existe na arvore\n");
+}
+
+void insertPthread(void * insertArgs) {
+  InsertRemoveArgs *threadInsertArgs = (InsertRemoveArgs *) insertArgs;
+  insert(threadInsertArgs->value, threadInsertArgs->root);
 }
 
 void initRoot(NodePointerType *root) { *root = NULL; }
@@ -122,6 +132,11 @@ void removeValue(RegistryType value, NodePointerType *root) {
     *root = (*root)->right;
     free(Aux);
   }
+}
+
+void removePthread(void *removeArgs) {
+  InsertRemoveArgs *threadRemoveArgs = (InsertRemoveArgs *) removeArgs;
+  removeValue(threadRemoveArgs->value, threadRemoveArgs->root);
 }
 
 void testI(NodeType *root, int pai) {

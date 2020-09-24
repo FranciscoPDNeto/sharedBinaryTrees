@@ -24,10 +24,12 @@ void permut(KeyType A[], int n) {
 
 int main(int argc, char *argv[]) {
   struct timeval t;
-  NodeType *root;
+  NodePointerType root;
   RegistryType x;
   KeyType vetor[MAX];
   int i, j, k, n;
+
+  pthread_t threads[MAX];
 
   initRoot(&root);
   /* Gera uma permutação aleatoria de chaves entre 1 e MAX */
@@ -40,7 +42,10 @@ int main(int argc, char *argv[]) {
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
   for (i = 0; i < MAX; i++) {
     x.key = vetor[i];
-    insert(x, &root);
+    InsertRemoveArgs insertArgs;
+    insertArgs.value = x;
+    insertArgs.root = &root;
+    insertPthread(&insertArgs);
     printf("Inseriu chave: %ld\n", x.key);
   }
   
@@ -51,18 +56,25 @@ int main(int argc, char *argv[]) {
     k = (int)(10.0 * rand() / (RAND_MAX + 1.0));
     n = vetor[k];
     x.key = n;
-    removeValue(x, &root);
+    InsertRemoveArgs insertRemoveArgs;
+    insertRemoveArgs.value = x;
+    insertRemoveArgs.root = &root;
+    removePthread(&insertRemoveArgs);
     test(root);
     printf("Retirou chave: %ld\n", x.key);
     for (j = 0; j < MAX; j++) {
       x.key = vetor[(int)(10.0 * rand() / (RAND_MAX + 1.0))];
       if (x.key != n) {
         printf("Pesquisando chave: %ld\n", x.key);
-        search(&x, &root);
+        SearchArgs searchArgs;
+        searchArgs.value = &x;
+        searchArgs.root = &root;
+        searchPthread(&searchArgs);
       }
     }
     x.key = n;
-    insert(x, &root);
+    insertRemoveArgs.value = x;
+    insertPthread(&insertRemoveArgs);
     printf("Inseriu chave: %ld\n", x.key);
     test(root);
   }
@@ -70,7 +82,10 @@ int main(int argc, char *argv[]) {
   /* Retira a raiz da arvore ate que ela fique vazia */
   for (i = 0; i < MAX; i++) {
     x.key = root->registry.key;
-    removeValue(x, &root);
+    InsertRemoveArgs removeArgs;
+    removeArgs.value = x;
+    removeArgs.root = &root;
+    removePthread(&removeArgs);
     test(root);
     printf("Retirou chave: %ld\n", x.key);
   }
