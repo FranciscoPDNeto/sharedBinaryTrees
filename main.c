@@ -5,6 +5,8 @@
 #include <sys/time.h>
 #include "binaryTree.h"
 
+#define NUM_THREADS 4
+
 double rand0to1() {
   double result = (double)rand() / RAND_MAX; /* Dividir pelo maior inteiro */
   if (result > 1.0)
@@ -30,6 +32,7 @@ int main(int argc, char *argv[]) {
   KeyType vetor[MAX];
   int i, j, k, n;
 
+  // TODO Não deve ter essa quantidade de threads por conta do overhead.
   pthread_t threads[MAX];
 
   initRoot(&root);
@@ -41,29 +44,29 @@ int main(int argc, char *argv[]) {
   permut(vetor, MAX - 1);
 
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
-  InsertRemoveArgs insertArgs[MAX];
+  InsertRemoveArgs insertRemoveArgs[MAX];
   for (i = 0; i < MAX; i++) {
     x.key = vetor[i];
-    insertArgs[i].value = x;
-    insertArgs[i].root = &root;
-    pthread_create(&(threads[i]), NULL, insertPthread, &(insertArgs[i]));
+    insertRemoveArgs[i].value = x;
+    insertRemoveArgs[i].root = &root;
+    pthread_create(&(threads[i]), NULL, insertPthread, &(insertRemoveArgs[i]));
   }
+
   for (i = 0; i < MAX; i++)
     pthread_join(threads[i], NULL);
-  
   
   test(root);
 
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
+  /* TODO Implementar essa parte do teste com pthreads.
   for (i = 0; i <= MAX; i++) {
     k = (int)(10.0 * rand() / (RAND_MAX + 1.0));
     n = vetor[k];
     x.key = n;
-    InsertRemoveArgs insertRemoveArgs;
-    insertRemoveArgs.value = x;
-    insertRemoveArgs.root = &root;
-    removePthread(&insertRemoveArgs);
-    test(root);
+    InsertRemoveArgs iRemoveArgs;
+    iRemoveArgs.value = x;
+    iRemoveArgs.root = &root;
+    removePthread(&iRemoveArgs);
     printf("Retirou chave: %ld\n", x.key);
     for (j = 0; j < MAX; j++) {
       x.key = vetor[(int)(10.0 * rand() / (RAND_MAX + 1.0))];
@@ -76,21 +79,24 @@ int main(int argc, char *argv[]) {
       }
     }
     x.key = n;
-    insertRemoveArgs.value = x;
-    insertPthread(&insertRemoveArgs);
+    iRemoveArgs.value = x;
+    insertPthread(&iRemoveArgs);
     printf("Inseriu chave: %ld\n", x.key);
-    test(root);
   }
-
+  test(root);
+  */
   /* Retira a raiz da arvore ate que ela fique vazia */
+  
   for (i = 0; i < MAX; i++) {
-    x.key = root->registry.key;
-    InsertRemoveArgs removeArgs;
-    removeArgs.value = x;
-    removeArgs.root = &root;
-    removePthread(&removeArgs);
-    test(root);
-    printf("Retirou chave: %ld\n", x.key);
+    x.key = vetor[i];
+    insertRemoveArgs[i].value = x;
+    insertRemoveArgs[i].root = &root;
+    pthread_create(&(threads[i]), NULL, removePthread, &(insertRemoveArgs[i]));
   }
+  for (i = 0; i < MAX; i++)
+    pthread_join(threads[i], NULL);
+  
+  // test(root);
+
   return 0;
 }
