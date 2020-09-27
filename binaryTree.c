@@ -18,35 +18,37 @@ void search(RegistryType *value, NodePointerType *root) {
     return;
   }
 
+  pthread_mutex_lock(&((*root)->mutexReadersCounter));
+  if (++(*root)->numReaders == 1)
+    pthread_mutex_lock(&((*root)->mutex));
+  pthread_mutex_unlock(&((*root)->mutexReadersCounter));
+
   if (value->key < (*root)->registry.key) {
-    pthread_mutex_lock(&(*root)->mutexReadersCounter);
-    if (++(*root)->numReaders == 1)
-      pthread_mutex_lock(&(*root)->mutex);
-    pthread_mutex_unlock(&(*root)->mutexReadersCounter);
+
+    pthread_mutex_lock(&((*root)->mutexReadersCounter));
+    if (--(*root)->numReaders == 0)
+      pthread_mutex_unlock(&(*root)->mutex);
+    pthread_mutex_unlock(&((*root)->mutexReadersCounter));
 
     search(value, &(*root)->left);
 
-    pthread_mutex_lock(&(*root)->mutexReadersCounter);
-    if (--(*root)->numReaders == 0)
-      pthread_mutex_unlock(&(*root)->mutex);
-    pthread_mutex_unlock(&(*root)->mutexReadersCounter);
-
   } else if (value->key > (*root)->registry.key) {
 
-    pthread_mutex_lock(&(*root)->mutexReadersCounter);
-    if (++(*root)->numReaders == 1)
-      pthread_mutex_lock(&(*root)->mutex);
-    pthread_mutex_unlock(&(*root)->mutexReadersCounter);
+    pthread_mutex_lock(&((*root)->mutexReadersCounter));
+    if (--(*root)->numReaders == 0)
+      pthread_mutex_unlock(&((*root)->mutex));
+    pthread_mutex_unlock(&((*root)->mutexReadersCounter));
 
     search(value, &(*root)->right);
 
-    pthread_mutex_lock(&(*root)->mutexReadersCounter);
-    if (--(*root)->numReaders == 0)
-      pthread_mutex_unlock(&(*root)->mutex);
-    pthread_mutex_unlock(&(*root)->mutexReadersCounter);
-
-  } else
+  } else {
     *value = (*root)->registry;
+    
+    pthread_mutex_lock(&((*root)->mutexReadersCounter));
+    if (--(*root)->numReaders == 0)
+      pthread_mutex_unlock(&((*root)->mutex));
+    pthread_mutex_unlock(&((*root)->mutexReadersCounter));
+  }
 }
 
 void *searchPthread(void *searchArgs) {
@@ -63,21 +65,24 @@ void insert(RegistryType value, NodePointerType *root) {
     pthread_mutex_init(&(*root)->mutex, NULL);
     (*root)->numReaders = 0;
     pthread_mutex_init(&(*root)->mutexReadersCounter, NULL);
+    return;
+  }
 
-  } else if (value.key < (*root)->registry.key) {
+  pthread_mutex_lock(&((*root)->mutex));
+  if (value.key < (*root)->registry.key) {
 
-    pthread_mutex_lock(&(*root)->mutex);
+    pthread_mutex_unlock(&((*root)->mutex));
     insert(value, &(*root)->left);
-    pthread_mutex_unlock(&(*root)->mutex);
 
   } else if (value.key > (*root)->registry.key) {
 
-    pthread_mutex_lock(&(*root)->mutex);
+    pthread_mutex_unlock(&((*root)->mutex));
     insert(value, &(*root)->right);
-    pthread_mutex_unlock(&(*root)->mutex);
 
-  } else
-    printf("Erro : Registro ja existe na arvore\n");
+  } else {
+    pthread_mutex_unlock(&((*root)->mutex));
+    printf("Erro : Registro %ld com o %ld ja existe na arvore\n", (*root)->registry.key, value.key);
+  }
 }
 
 void *insertPthread(void *insertArgs) {
@@ -88,7 +93,9 @@ void *insertPthread(void *insertArgs) {
 void initRoot(NodePointerType *root) { *root = NULL; }
 
 void previousNode(NodePointerType q, NodePointerType *r) {
+  pthread_mutex_lock(&(*r)->mutex);
   if ((*r)->right != NULL) {
+    pthread_mutex_unlock(&(*r)->mutex);
     previousNode(q, &(*r)->right);
     return;
   }
@@ -102,20 +109,20 @@ void previousNode(NodePointerType q, NodePointerType *r) {
 void removeValue(RegistryType value, NodePointerType *root) {
   NodePointerType Aux;
   if (*root == NULL) {
-    printf("Erro : Registro nao esta na arvore\n");
+    printf("Erro : Registro %ld nao esta na arvore\n", value.key);
     return;
   }
 
+  pthread_mutex_lock(&(*root)->mutex);
+
   if (value.key < (*root)->registry.key) {
-    pthread_mutex_lock(&(*root)->mutex);
-    removeValue(value, &(*root)->left);
     pthread_mutex_unlock(&(*root)->mutex);
+    removeValue(value, &(*root)->left);
 
   } else if (value.key > (*root)->registry.key) {
 
-    pthread_mutex_lock(&(*root)->mutex);
-    removeValue(value, &(*root)->right);
     pthread_mutex_unlock(&(*root)->mutex);
+    removeValue(value, &(*root)->right);
 
   } else if ((*root)->right == NULL) {
     Aux = *root;
@@ -125,6 +132,7 @@ void removeValue(RegistryType value, NodePointerType *root) {
   } else if ((*root)->left != NULL) {
 
     previousNode(*root, &(*root)->left);
+    pthread_mutex_unlock(&(*root)->mutex);
 
   } else {
 
@@ -142,6 +150,7 @@ void *removePthread(void *removeArgs) {
 void testI(NodeType *root, int pai) {
   if (root == NULL)
     return;
+  printf("Registry Value: %ld \n", root->registry.key);
   if (root->left != NULL) {
     if (root->registry.key < root->left->registry.key) {
       printf("Erro: Pai %ld menor que filho a esquerda %ld\n",

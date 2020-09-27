@@ -14,7 +14,7 @@
  * @brief Variável que define a quantidade de elementos máximo na árvore.
  * 
  */
-#define MAX 10
+#define MAX 1000
 
 /**
  * @brief Tipo da chave do registro para o nó.
