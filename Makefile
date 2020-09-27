@@ -13,3 +13,6 @@ $(EXEC): $(OBJ)
 
 clean:
 	rm -rf $(OBJ) $(EXEC)
+
+run:
+	./binaryTree
