@@ -104,8 +104,8 @@ void barreira(TBarreira *b) { pthread_barrier_wait(b); }
 void previousNode(NodePointerType q, NodePointerType *r) {
   pthread_mutex_lock(&(*r)->mutex);
   if ((*r)->right != NULL) {
-    pthread_mutex_unlock(&(*r)->mutex);
     previousNode(q, &(*r)->right);
+    pthread_mutex_unlock(&(*r)->mutex);
     return;
   }
 
@@ -139,7 +139,7 @@ void removeValue(RegistryType value, NodePointerType *root) {
 
   } else if (value.key > (*root)->registry.key) {
 
-    if ((*root)->left != NULL)
+    if ((*root)->right != NULL)
       pthread_mutex_unlock(&(*root)->mutex);
     else
       isLeaf = 1;
