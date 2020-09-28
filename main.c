@@ -49,7 +49,6 @@ void *insertionPhase(void *phaseArgs) {
     :
     ((threadIndex + 1) * (MAX / NUM_THREADS)) + (MAX % NUM_THREADS);
   for (i = startValue; i < endValue; i++) {
-    printf("Inseriu chave: %ld\n", insertionPhaseArgs->vetor[i].key);
     insert(insertionPhaseArgs->vetor[i], insertionPhaseArgs->root);
   }
   barreira(insertionPhaseArgs->barrier);
@@ -91,7 +90,6 @@ void *removalPhase(void *phaseArgs) {
     :
     ((threadIndex + 1) * (MAX / NUM_THREADS)) + (MAX % NUM_THREADS);
   for (i = startValue; i < endValue; i++) {
-    printf("Tirando o valor %ld\n", removalPhaseArgs->vetor[i].key);
     removeValue(removalPhaseArgs->vetor[i], removalPhaseArgs->root);
   }
   barreira(removalPhaseArgs->barrier);
@@ -132,8 +130,6 @@ int main(int argc, char *argv[]) {
   timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
   printf("Fase de inserção encerrada com %f operações por segundo.\n", ((double) MAX) / timeToFinish);
 
-  test(root);
-
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
   start = clock();
   for (i = 0; i < NUM_THREADS; i++) {
@@ -145,8 +141,6 @@ int main(int argc, char *argv[]) {
   timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
   printf("Fase de inserção, pesquisa e remoção encerrada com %f operações por segundo.\n", (MAX * (MAX + 2)) / timeToFinish);
 
-  test(root);
-
   /* Retira a raiz da arvore ate que ela fique vazia */
   start = clock();
   for (i = 0; i < NUM_THREADS; i++) {
@@ -157,8 +151,6 @@ int main(int argc, char *argv[]) {
   end = clock();
   timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
   printf("Fase de remoção encerrada com %f operações por segundo.\n", ((double)MAX) / timeToFinish);
-
-  test(root);
 
   return 0;
 }
