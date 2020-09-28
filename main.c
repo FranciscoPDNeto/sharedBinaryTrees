@@ -100,12 +100,10 @@ int main(int argc, char *argv[]) {
   struct timeval t;
   NodePointerType root;
   RegistryType vetor[MAX];
+  pthread_t threads[NUM_THREADS];
   TBarreira barrier;
   int i;
   double timeToFinish;
-
-  // TODO Não deve ter essa quantidade de threads por conta do overhead.
-  pthread_t threads[NUM_THREADS];
 
   initBarreira(&barrier, NUM_THREADS + 1);
   initRoot(&root);
