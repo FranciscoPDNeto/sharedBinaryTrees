@@ -27,7 +27,7 @@ void search(RegistryType *value, NodePointerType *root) {
 
     pthread_mutex_lock(&((*root)->mutexReadersCounter));
     if (--(*root)->numReaders == 0)
-      pthread_mutex_unlock(&(*root)->mutex);
+      pthread_mutex_unlock(&((*root)->mutex));
     pthread_mutex_unlock(&((*root)->mutexReadersCounter));
 
     search(value, &(*root)->left);
@@ -57,9 +57,9 @@ void insert(RegistryType value, NodePointerType *root) {
     (*root)->registry = value;
     (*root)->left = NULL;
     (*root)->right = NULL;
-    pthread_mutex_init(&(*root)->mutex, NULL);
+    pthread_mutex_init(&((*root)->mutex), NULL);
     (*root)->numReaders = 0;
-    pthread_mutex_init(&(*root)->mutexReadersCounter, NULL);
+    pthread_mutex_init(&((*root)->mutexReadersCounter), NULL);
     return;
   }
 
