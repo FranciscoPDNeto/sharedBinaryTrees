@@ -64,15 +64,30 @@ void insert(RegistryType value, NodePointerType *root) {
   }
 
   pthread_mutex_lock(&((*root)->mutex));
+  int isLeaf = 0;
   if (value.key < (*root)->registry.key) {
 
-    pthread_mutex_unlock(&((*root)->mutex));
+    if ((*root)->left != NULL)
+      pthread_mutex_unlock(&((*root)->mutex));
+    else
+      isLeaf = 1;
+
     insert(value, &(*root)->left);
+
+    if (isLeaf)
+      pthread_mutex_unlock(&((*root)->mutex));
 
   } else if (value.key > (*root)->registry.key) {
 
-    pthread_mutex_unlock(&((*root)->mutex));
+    if ((*root)->right != NULL)
+      pthread_mutex_unlock(&((*root)->mutex));
+    else
+      isLeaf = 1;
+
     insert(value, &(*root)->right);
+    
+    if (isLeaf)
+      pthread_mutex_unlock(&((*root)->mutex));
 
   } else {
     pthread_mutex_unlock(&((*root)->mutex));
@@ -109,14 +124,30 @@ void removeValue(RegistryType value, NodePointerType *root) {
 
   pthread_mutex_lock(&((*root)->mutex));
 
+  int isLeaf = 0;
   if (value.key < (*root)->registry.key) {
-    pthread_mutex_unlock(&(*root)->mutex);
+
+    if ((*root)->left != NULL)
+      pthread_mutex_unlock(&(*root)->mutex);
+    else
+      isLeaf = 1;
+    
     removeValue(value, &(*root)->left);
+
+    if (isLeaf)
+      pthread_mutex_unlock(&(*root)->mutex);
 
   } else if (value.key > (*root)->registry.key) {
 
-    pthread_mutex_unlock(&(*root)->mutex);
+    if ((*root)->left != NULL)
+      pthread_mutex_unlock(&(*root)->mutex);
+    else
+      isLeaf = 1;
+
     removeValue(value, &(*root)->right);
+    
+    if (isLeaf)
+      pthread_mutex_unlock(&(*root)->mutex);
 
   } else if ((*root)->right == NULL) {
     Aux = *root;
