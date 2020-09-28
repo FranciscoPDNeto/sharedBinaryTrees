@@ -43,8 +43,11 @@ void *insertionPhase(void *phaseArgs) {
   PhaseArgs *insertionPhaseArgs = (PhaseArgs *) phaseArgs;
   int i;
   int threadIndex = insertionPhaseArgs->threadIndex;
-  int startValue = (threadIndex * MAX / NUM_THREADS);
-  int endValue = ((threadIndex + 1) * MAX / NUM_THREADS);
+  int startValue = (threadIndex * (MAX / NUM_THREADS));
+  int endValue = threadIndex != NUM_THREADS - 1 ?
+    ((threadIndex + 1) * (MAX / NUM_THREADS))
+    :
+    ((threadIndex + 1) * (MAX / NUM_THREADS)) + (MAX % NUM_THREADS);
   for (i = startValue; i < endValue; i++) {
     insert(insertionPhaseArgs->vetor[i], insertionPhaseArgs->root);
   }
@@ -54,8 +57,8 @@ void *insertionPhase(void *phaseArgs) {
 void *removeSearchInsertPhase(void *phaseArgs) {
   PhaseArgs *removeSearchInsertPhaseArgs = (PhaseArgs *) phaseArgs;
   int threadIndex = removeSearchInsertPhaseArgs->threadIndex;
-  int startValue = (threadIndex * MAX / NUM_THREADS);
   int dataPartitionAmount = MAX / NUM_THREADS;
+  int startValue = (threadIndex * dataPartitionAmount);
   int i, j, k, n;
   RegistryType aux;
   RegistryType *vetor = removeSearchInsertPhaseArgs->vetor;
@@ -81,8 +84,11 @@ void *removalPhase(void *phaseArgs) {
   PhaseArgs *removalPhaseArgs = (PhaseArgs *) phaseArgs;
   int i;
   int threadIndex = removalPhaseArgs->threadIndex;
-  int startValue = (threadIndex * MAX / NUM_THREADS);
-  int endValue = ((threadIndex + 1) * MAX / NUM_THREADS);
+  int startValue = (threadIndex * (MAX / NUM_THREADS));
+  int endValue = threadIndex != NUM_THREADS - 1 ?
+    ((threadIndex + 1) * (MAX / NUM_THREADS))
+    :
+    ((threadIndex + 1) * (MAX / NUM_THREADS)) + (MAX % NUM_THREADS);
   for (i = startValue; i < endValue; i++) {
     removeValue(removalPhaseArgs->vetor[i], removalPhaseArgs->root);
   }
@@ -124,7 +130,7 @@ int main(int argc, char *argv[]) {
 
   end = clock();
   timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
-  printf("Fase de inserção encerrada com %f operações por segundo.\n", MAX / timeToFinish);
+  printf("Fase de inserção encerrada com %f operações por segundo.\n", ((double) MAX) / timeToFinish);
 
   test(root);
 
@@ -150,7 +156,7 @@ int main(int argc, char *argv[]) {
 
   end = clock();
   timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
-  printf("Fase de remoção encerrada com %f operações por segundo.\n", MAX / timeToFinish);
+  printf("Fase de remoção encerrada com %f operações por segundo.\n", ((double)MAX) / timeToFinish);
 
   test(root);
 
