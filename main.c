@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <time.h>
 #include "binaryTree.h"
 
 #define NUM_THREADS 8
@@ -63,7 +64,7 @@ void *removeSearchInsertPhase(void *phaseArgs) {
     aux = vetor[k];
     removeValue(vetor[k], removeSearchInsertPhaseArgs->root);
     printf("Retirou chave: %ld\n", vetor[k].key);
-    for (j = 0; j < dataPartitionAmount; j++) {
+    for (j = 0; j < MAX; j++) {
       k = (int)((float) dataPartitionAmount * rand() / (RAND_MAX + 1.0)) + startValue;
       if (vetor[k].key != aux.key) {
         printf("Pesquisando chave: %ld\n", vetor[k].key);
@@ -89,11 +90,13 @@ void *removalPhase(void *phaseArgs) {
 }
 
 int main(int argc, char *argv[]) {
+  clock_t start, end;
   struct timeval t;
   NodePointerType root;
   RegistryType vetor[MAX];
   TBarreira barrier;
   int i;
+  double timeToFinish;
 
   // TODO Não deve ter essa quantidade de threads por conta do overhead.
   pthread_t threads[NUM_THREADS];
@@ -108,6 +111,7 @@ int main(int argc, char *argv[]) {
   permut(vetor, MAX - 1);
 
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
+  start = clock();
   PhaseArgs phaseArgs[NUM_THREADS];
   for (i = 0; i < NUM_THREADS; i++) {
     phaseArgs[i].vetor = vetor;
@@ -117,20 +121,37 @@ int main(int argc, char *argv[]) {
     pthread_create(&(threads[i]), NULL, insertionPhase, &(phaseArgs[i]));
   }
   barreira(&barrier);
+
+  end = clock();
+  timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
+  printf("Fase de inserção encerrada com %f operações por segundo.\n", MAX / timeToFinish);
+
   test(root);
 
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
+  start = clock();
   for (i = 0; i < NUM_THREADS; i++) {
     pthread_create(&(threads[i]), NULL, removeSearchInsertPhase, &(phaseArgs[i]));
   }
   barreira(&barrier);
+
+  end = clock();
+  timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
+  printf("Fase de inserção, pesquisa e remoção encerrada com %f operações por segundo.\n", (MAX * (MAX + 2)) / timeToFinish);
+
   test(root);
 
   /* Retira a raiz da arvore ate que ela fique vazia */
+  start = clock();
   for (i = 0; i < NUM_THREADS; i++) {
     pthread_create(&(threads[i]), NULL, removalPhase, &(phaseArgs[i]));
   }
   barreira(&barrier);
+
+  end = clock();
+  timeToFinish = ((double) end - start) / CLOCKS_PER_SEC;
+  printf("Fase de remoção encerrada com %f operações por segundo.\n", MAX / timeToFinish);
+
   test(root);
 
   return 0;
