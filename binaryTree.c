@@ -107,7 +107,7 @@ void removeValue(RegistryType value, NodePointerType *root) {
     return;
   }
 
-  pthread_mutex_lock(&(*root)->mutex);
+  pthread_mutex_lock(&((*root)->mutex));
 
   if (value.key < (*root)->registry.key) {
     pthread_mutex_unlock(&(*root)->mutex);
@@ -120,18 +120,27 @@ void removeValue(RegistryType value, NodePointerType *root) {
 
   } else if ((*root)->right == NULL) {
     Aux = *root;
+    if ((*root)->left != NULL) {
+      pthread_mutex_lock(&((*root)->left->mutex));
+    }
     *root = (*root)->left;
+    if ((*root) != NULL)
+      pthread_mutex_unlock(&((*root)->mutex));
     free(Aux);
 
   } else if ((*root)->left != NULL) {
 
     previousNode(*root, &(*root)->left);
-    pthread_mutex_unlock(&(*root)->mutex);
+    pthread_mutex_unlock(&((*root)->mutex));
 
   } else {
 
     Aux = *root;
+    if ((*root)->right != NULL)
+      pthread_mutex_lock(&((*root)->right->mutex));
     *root = (*root)->right;
+    if ((*root) != NULL)
+      pthread_mutex_unlock(&((*root)->mutex));
     free(Aux);
   }
 }

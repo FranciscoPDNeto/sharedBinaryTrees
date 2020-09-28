@@ -49,6 +49,7 @@ void *insertionPhase(void *phaseArgs) {
     :
     ((threadIndex + 1) * (MAX / NUM_THREADS)) + (MAX % NUM_THREADS);
   for (i = startValue; i < endValue; i++) {
+    printf("Inseriu chave: %ld\n", insertionPhaseArgs->vetor[i].key);
     insert(insertionPhaseArgs->vetor[i], insertionPhaseArgs->root);
   }
   barreira(insertionPhaseArgs->barrier);
@@ -90,6 +91,7 @@ void *removalPhase(void *phaseArgs) {
     :
     ((threadIndex + 1) * (MAX / NUM_THREADS)) + (MAX % NUM_THREADS);
   for (i = startValue; i < endValue; i++) {
+    printf("Tirando o valor %ld\n", removalPhaseArgs->vetor[i].key);
     removeValue(removalPhaseArgs->vetor[i], removalPhaseArgs->root);
   }
   barreira(removalPhaseArgs->barrier);
