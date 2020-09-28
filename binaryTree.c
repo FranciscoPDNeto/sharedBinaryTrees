@@ -51,11 +51,6 @@ void search(RegistryType *value, NodePointerType *root) {
   }
 }
 
-void *searchPthread(void *searchArgs) {
-  SearchArgs *threadSearchArgs = (SearchArgs *) searchArgs;
-  search(threadSearchArgs->value, threadSearchArgs->root);
-}
-
 void insert(RegistryType value, NodePointerType *root) {
   if (*root == NULL) {
     *root = (NodePointerType)malloc(sizeof(NodeType));
@@ -83,11 +78,6 @@ void insert(RegistryType value, NodePointerType *root) {
     pthread_mutex_unlock(&((*root)->mutex));
     printf("Erro : Registro %ld com o %ld ja existe na arvore\n", (*root)->registry.key, value.key);
   }
-}
-
-void *insertPthread(void *insertArgs) {
-  InsertRemoveArgs *threadInsertArgs = (InsertRemoveArgs *) insertArgs;
-  insert(threadInsertArgs->value, threadInsertArgs->root);
 }
 
 void initRoot(NodePointerType *root) { *root = NULL; }
@@ -144,11 +134,6 @@ void removeValue(RegistryType value, NodePointerType *root) {
     *root = (*root)->right;
     free(Aux);
   }
-}
-
-void *removePthread(void *removeArgs) {
-  InsertRemoveArgs *threadRemoveArgs = (InsertRemoveArgs *) removeArgs;
-  removeValue(threadRemoveArgs->value, threadRemoveArgs->root);
 }
 
 void testI(NodeType *root, int pai) {
