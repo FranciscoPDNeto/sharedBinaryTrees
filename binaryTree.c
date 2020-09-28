@@ -43,7 +43,7 @@ void search(RegistryType *value, NodePointerType *root) {
 
   } else {
     *value = (*root)->registry;
-    
+
     pthread_mutex_lock(&((*root)->mutexReadersCounter));
     if (--(*root)->numReaders == 0)
       pthread_mutex_unlock(&((*root)->mutex));
@@ -91,6 +91,10 @@ void *insertPthread(void *insertArgs) {
 }
 
 void initRoot(NodePointerType *root) { *root = NULL; }
+
+void initBarreira(TBarreira *b, int n) { pthread_barrier_init(b, NULL, n); }
+
+void barreira(TBarreira *b) { pthread_barrier_wait(b); }
 
 void previousNode(NodePointerType q, NodePointerType *r) {
   pthread_mutex_lock(&(*r)->mutex);

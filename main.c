@@ -30,11 +30,13 @@ int main(int argc, char *argv[]) {
   NodePointerType root;
   RegistryType x;
   KeyType vetor[MAX];
+  TBarreira barrier;
   int i, j, k, n;
 
   // TODO Não deve ter essa quantidade de threads por conta do overhead.
   pthread_t threads[MAX];
 
+  initBarreira(&barrier, MAX + 1);
   initRoot(&root);
   /* Gera uma permutação aleatoria de chaves entre 1 e MAX */
   for (i = 0; i < MAX; i++)
@@ -54,7 +56,7 @@ int main(int argc, char *argv[]) {
 
   for (i = 0; i < MAX; i++)
     pthread_join(threads[i], NULL);
-  
+
   test(root);
 
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
@@ -86,7 +88,7 @@ int main(int argc, char *argv[]) {
   test(root);
   */
   /* Retira a raiz da arvore ate que ela fique vazia */
-  
+
   for (i = 0; i < MAX; i++) {
     x.key = vetor[i];
     insertRemoveArgs[i].value = x;
@@ -95,7 +97,7 @@ int main(int argc, char *argv[]) {
   }
   for (i = 0; i < MAX; i++)
     pthread_join(threads[i], NULL);
-  
+
   // test(root);
 
   return 0;
